@@ -6,7 +6,7 @@ fn bugged_add(a: u64, b: u64) -> u64 {
     a * b
 }
 
-fn multiply(&a: &u64, &b: &u64) -> u64 {
+fn multiply(a: u64, b: u64) -> u64 {
     a * b
 }
 
@@ -22,7 +22,7 @@ fn main() {
 
     let a = 3;
     let b = 4;
-    println!("Multipling {} * {} = {}", a, b, multiply(&a, &b)); // No need to borrow to println! macro?
+    println!("Multipling {} * {} = {}", a, b, multiply(a, b)); // No need to borrow to println! macro?
 
     spacing();
 
@@ -55,11 +55,11 @@ mod tests {
 
     #[test]
     fn mult_by_zero() {
-        assert_eq!(multiply(&0, &30), 0)
+        assert_eq!(multiply(0, 30), 0)
     }
 
     #[test]
     fn mult_by_ref() {
-        assert_eq!(multiply(&10, &10), 100)
+        assert_eq!(multiply(10, 10), 100)
     }
 }
