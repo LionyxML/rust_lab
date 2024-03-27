@@ -1,5 +1,6 @@
-use std::str::FromStr;
+use std::{fs::File, str::FromStr};
 
+use image::{png::PNGEncoder, ColorType};
 use num::Complex;
 
 /// Tests if complex is inside Mandelbrot set
@@ -33,14 +34,62 @@ fn parse_pair<T: FromStr>(s: &str, separator: char) -> Option<(T, T)> {
     }
 }
 
-
 /// Analyzes a pair of floating numbers separated by comma
 /// as a complex number
 fn parse_complex(s: &str) -> Option<Complex<f64>> {
     match parse_pair(s, ',') {
-        Some((re, im)) => Some(Complex {re, im}),
-        None => None
+        Some((re, im)) => Some(Complex { re, im }),
+        None => None,
     }
+}
+
+/// Given line and column of a pixel on the output picture,
+/// returns the corresponding point on the complex pane.
+///
+///            upper_left           [bounds.0]
+///               A+----------------------------------------+
+///                |                                        |
+///    [bounds.1]  |                                        |
+///                |                                        |
+///                +----------------------------------------+B
+///                                                  lower_right
+///
+///  A  line 0, column 0
+///  B  line bounds.1 - 1, column bounds.0 = 1
+///
+fn pixel_to_point(
+    bounds: (usize, usize),
+    pixel: (usize, usize),
+    upper_left: Complex<f64>,
+    lower_right: Complex<f64>,
+) -> Complex<f64> {
+    let (width, height) = (
+        lower_right.re - upper_left.re,
+        upper_left.im - lower_right.im,
+    );
+
+    Complex {
+        re: upper_left.re + pixel.0 as f64 * width / bounds.0 as f64,
+        im: upper_left.im - pixel.1 as f64 * height / bounds.1 as f64,
+        // The reason for subtracting here is that pixel.1 increases as
+        // we go down, but the imaginary component increases when
+        // we go up
+    }
+}
+
+/// Writes the buffer `pixels`, as dimensions are given by `bounds`,
+/// to a file `filename`.
+fn write_image(
+    filename: &str,
+    pixels: &[u8],
+    bounds: (usize, usize),
+) -> Result<(), std::io::Error> {
+    let output = File::create(filename)?;
+    let encoder = PNGEncoder::new(output);
+
+    encoder.encode(pixels, bounds.0 as u32, bounds.1 as u32, ColorType::Gray(8))?;
+
+    Ok(())
 }
 
 fn main() {
@@ -68,4 +117,20 @@ fn test_parse_complex() {
         })
     );
     assert_eq!(parse_complex(",-0.0625"), None);
+}
+
+#[test]
+fn test_pixel_to_point() {
+    assert_eq!(
+        pixel_to_point(
+            (100, 200),
+            (25, 175),
+            Complex { re: -1.0, im: 1.0 },
+            Complex { re: 1.0, im: -1.0 }
+        ),
+        Complex {
+            re: -0.5,
+            im: -0.75
+        }
+    );
 }
