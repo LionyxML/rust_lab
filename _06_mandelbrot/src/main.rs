@@ -90,7 +90,7 @@ fn render(
             let point = pixel_to_point(bounds, (column, row), upper_left, lower_right);
             pixels[row * bounds.0 + column] = match escape_time(point, 255) {
                 None => 0,
-                Some(count) => 255 - count as u8
+                Some(count) => 255 - count as u8,
             }
         }
     }
@@ -129,7 +129,7 @@ fn main() {
 
     let threads = 8;
     let rows_per_band = bounds.1 / threads + 1;
-    
+
     let bands: Vec<&mut [u8]> = pixels.chunks_mut(rows_per_band * bounds.0).collect();
 
     crossbeam::scope(|spawner| {
@@ -145,8 +145,8 @@ fn main() {
             });
         }
     })
-    .unwrap();    
-    
+    .unwrap();
+
     write_image(&args[1], &pixels, bounds).expect("error writing PNG file");
 }
 
