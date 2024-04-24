@@ -1,0 +1,7 @@
+[package]
+name = "_09_axum-postgres-crud-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
