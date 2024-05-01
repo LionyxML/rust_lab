@@ -1,0 +1,42 @@
+#+TITLE: Org-Mode file for Testing
+
+* GET all tasks
+  #+begin_src sh :results verbatim
+    curl localhost:7878/tasks
+  #+end_src
+
+  #+RESULTS:
+  : {"data":[],"success":true}
+
+
+* POST new task
+
+A failing one:
+
+#+BEGIN_SRC sh :results verbatim
+curl -X POST \
+     -H "Content-Type: application/json" \
+     -d '{
+           "name": "My new task is this!",
+           "priority": "10"
+         }' \
+     localhost:7878/tasks
+#+END_SRC
+
+#+RESULTS:
+: Failed to deserialize the JSON body into the target type: priority: invalid type: string "10", expected i32 at line 3 column 27
+
+A good success one:
+
+#+BEGIN_SRC sh :results verbatim
+curl -X POST \
+     -H "Content-Type: application/json" \
+     -d '{
+           "name": "My new task is this!",
+           "priority": 10
+         }' \
+     localhost:7878/tasks
+#+END_SRC
+
+#+RESULTS:
+: {"data":{"task_id":26},"success":true}
